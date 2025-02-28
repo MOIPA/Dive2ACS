@@ -1,7 +1,5 @@
 package com.leetcode;
 
-import com.sun.org.apache.xpath.internal.operations.Bool;
-
 import java.util.*;
 
 public class InsertIntervals57 {

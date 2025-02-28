@@ -1,6 +1,5 @@
 package com.company.UDP;
 
-import sun.misc.BASE64Encoder;
 
 import java.math.BigInteger;
 import java.util.Arrays;
@@ -21,7 +20,7 @@ public class StringBytes {
         for (Byte datum : data) {
             System.out.println(Integer.toBinaryString((datum & 0xFF) + 0x100).substring(1));
         }
-        System.out.println(new BASE64Encoder().encode(data));
+//        System.out.println(new BASE64Encoder().encode(data));
 //        System.out.println(Integer.toBinaryString(183));
         System.out.println(" 第二和第三个字节拼接后的十进制数");
         System.out.println(new BigInteger(1, new byte[]{data[2], data[3]}).toString(10));
