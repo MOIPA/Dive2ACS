@@ -1,6 +1,5 @@
 package com.new_leet_code.list_operation;
 
-import org.apache.poi.xslf.extractor.XSLFPowerPointExtractor;
 
 public class ClassicListProblem {
     public static void main(String[] args) {
