@@ -301,9 +301,15 @@ public class Sort {
             int i=array.length-1;
             while(i>=1) {
                 swap(array, i--, 0); // 取出根节点
-                for(int k=0;k<=(i-1)/2;k++){
-                    if(k*2+1<=i &&array[k]<array[k*2+1]) swap(array, k, k*2+1);
-                    if(k*2+2<=i &&array[k]<array[k*2+2]) swap(array, k, k*2+2);
+                // heapfier 操作
+                int k=0;
+                while(k<=(i-1)/2){
+                    int maxInd = k;
+                    if(k*2+1<=i &&array[k]<array[k*2+1]) maxInd = k*2+1;
+                    if(k*2+2<=i &&array[k]<array[k*2+2]&&array[k*2+2]>array[k*2+1]) maxInd=k*2+2;
+                    if(maxInd==k)break;
+                    swap(array, maxInd, k);
+                    k = maxInd;
                 }
             }
         }
