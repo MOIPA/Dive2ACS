@@ -7,8 +7,8 @@ import com.ds.list.array.ArrayList;
 public class TreeOp {
     public static void main(String[] args) {
         TreeOp op = new TreeOp();
-        TreeNode node1 = op.new TreeNode(3, op.new TreeNode(2), op.new TreeNode(4));
-        TreeNode node3 = op.new TreeNode(7, op.new TreeNode(6), op.new TreeNode(8));
+        TreeNode node1 = op.new TreeNode(3, op.new TreeNode(2,op.new TreeNode(11),op.new TreeNode(12)), op.new TreeNode(4));
+        TreeNode node3 = op.new TreeNode(7);
         TreeNode root = op.new TreeNode(5,node1,node3);
         Solution s = op.new Solution();
 
@@ -19,6 +19,13 @@ public class TreeOp {
         System.out.println();
         // 2. 二叉树最大宽度
         System.out.println(s.getMaxLength(root));
+        // 3. 判断一棵树是否是二叉搜索树
+        System.out.println(s.isBST(root));
+        // 4. 判断一棵树是否是完全二叉树  层次，出队列的时候只要右节点不存在，左节点存在，返回false，或者左右都不存在，后续出队节点如果有孩子 false
+        System.out.println(s.isComplete(root));
+        // 5. 判断是否是平衡二叉树
+        System.out.println(s.getTreeDepth(root, 0));
+        System.out.println(s.isBanlance(root));
     }
     
     public class Solution{
@@ -78,6 +85,59 @@ public class TreeOp {
                 
             }
             return maxLength;
+        }
+    
+        // 3. 判断一棵树是否是二叉搜索树
+        private TreeNode preValue = null; 
+        public boolean isBST(TreeNode root){
+            if(root==null)return true;
+            if(!isBST(root.left))return false;
+            // 访问节点
+            if(preValue!=null && root.val<=preValue.val)return false;
+            else preValue = root;
+            if(!isBST(root.right))return false;
+            return true;
+        }
+
+        // 4. 判断一棵树是否是完全二叉树  层次，出队列的时候只要右节点不存在，左节点存在，返回false，或者左右都不存在，后续出队节点如果有孩子 false
+        public boolean isComplete(TreeNode root){
+            Queue<TreeNode> queue = new LinkedList<>();
+            queue.add(root);
+            boolean flag = true; // 后续是否可以有孩子
+            while(!queue.isEmpty()){
+                TreeNode node = queue.poll();
+                if(node.left==null && node.right!=null)return false;
+                if(node.left==null && node.right == null){
+                    flag = false;
+                }
+                if(node.left!=null && node.right == null){
+                    flag = false;
+                    queue.add(node.left);
+                }
+                if(node.left!=null && node.right != null){
+                    if(!flag) return false;
+                    queue.add(node.left);
+                    queue.add(node.right);
+                }
+            }
+            return true;
+        }
+        
+        // 5. 判断是否是平衡二叉树
+        public boolean isBanlance(TreeNode root){
+            // 左右树是否平衡
+            if(root==null)return true;
+            if(!isBanlance(root.left))return false;
+            if(!isBanlance(root.right))return false;
+            // 左右树高度差距是否大于=2
+            if(Math.abs(getTreeDepth(root.left, 0)-getTreeDepth(root.right, 0))>=2) return false;
+            return true;
+        }
+        public int getTreeDepth(TreeNode node,int dep){
+            if(node==null)return dep;
+            int leftDep = getTreeDepth(node.left, dep+1);
+            int rightDep = getTreeDepth(node.right, dep+1);
+            return Math.max(leftDep, rightDep);
         }
     }
 
