@@ -13,6 +13,7 @@ public class GraphOP {
         System.out.println(s.bfs(root));
         // 2. DFS 深度优先遍历
         System.out.println(s.dfs(root));
+        // 3. 拓扑排序算法（只能用于有向图，且有入度为0的点，且没有环）
     }
 
     class Solution {
@@ -58,6 +59,8 @@ public class GraphOP {
             }
             return res;
         }
+        // 3. 拓扑排序算法（只能用于有向图，且有入度为0的点，且没有环）,思路是：先找入度为0的点，擦掉点和对应边，如此循环，如果最后还有节点存在，说明有环路
+        public String 
     }
 
     public Graph createExample(){
