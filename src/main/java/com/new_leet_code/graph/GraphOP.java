@@ -20,7 +20,12 @@ public class GraphOP {
         // 4. 最小生成树算法，克鲁斯卡尔（每次选最小边看是否有环，无环加入）和普里姆算法 （只能用于无向图，即每个两个点有来回两条边🔁）
         // 克鲁斯卡尔算法里，很重要的是判断环路，每次选择最小边，加入第一次选择了 k边，两端点是A和B，如果A和B不是一个集合，边可以，否则不可以
         // 要实现这个算法，需要实现这样的集合结构和相关操作：给from和to判断是否处于一个集合，合并from和to所在集合
+        System.out.println("kruskal:");
         Set<Edge> edges = s.kruskalMST(graphOP.createExample2());
+        edges.forEach(x->System.out.print("weight:"+x.weight+" from:"+x.from.value+" to:"+x.to.value+"\n"));
+        // 4.1 prim算法
+        System.out.println("prim:");
+        edges = s.primMST(graphOP.createExample2());
         edges.forEach(x->System.out.print("weight:"+x.weight+" from:"+x.from.value+" to:"+x.to.value+"\n"));
     }
 
@@ -118,6 +123,31 @@ public class GraphOP {
             }
             return res;
         }
+    
+        // 4.1 prim算法 思路：从一个点出发，将这个点的所有边加入优先级队列，弹出最小权重边，检查这个边的端点是否已经加入集合，加入了则换下一个最小边
+        public Set<Edge> primMST(Graph graph){
+            // 优先级队列
+            PriorityQueue<Edge> queue = new PriorityQueue<>((o1,o2)->o1.weight-o2.weight);
+            // 结果集合
+            Set<Edge> res = new HashSet<>();
+            // 点是否已经存在于set中
+            Set<Node> existSet = new HashSet<>();
+            // 从任意一个点出发，for循环是为了保证森林的情况出现 
+            for(Node startNode:graph.nodes.values()){
+                startNode.edges.forEach(x->queue.add(x));
+                existSet.add(startNode);
+                // 循环
+                while(!queue.isEmpty()){
+                    Edge minEdge = queue.poll();
+                    if(existSet.contains(minEdge.to))continue;
+                    existSet.add(minEdge.to);
+                    res.add(minEdge);
+                    minEdge.to.edges.forEach(x->queue.add(x)); // 端点的边加入候选边
+                }
+                // break;  如果图是联通的，就直接break了，不用考虑森林情况
+            }
+            return res;
+        }
     }
 
     public Graph createExample() {
@@ -135,7 +165,7 @@ public class GraphOP {
         int[][] matrix = new int[12][3];
         matrix[0] = new int[] { 0, 1, 1 };
         matrix[1] = new int[] { 0, 2, 2 };
-        matrix[2] = new int[] { 0, 3, 2 };
+        matrix[2] = new int[] { 0, 3, 2 }; 
         matrix[3] = new int[] { 1, 4, 1 };
         matrix[4] = new int[] { 1, 2, 3 };
         matrix[5] = new int[] { 2, 3, 1 };
