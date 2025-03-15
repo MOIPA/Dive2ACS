@@ -22,11 +22,23 @@ public class GraphOP {
         // 要实现这个算法，需要实现这样的集合结构和相关操作：给from和to判断是否处于一个集合，合并from和to所在集合
         System.out.println("kruskal:");
         Set<Edge> edges = s.kruskalMST(graphOP.createExample2());
-        edges.forEach(x->System.out.print("weight:"+x.weight+" from:"+x.from.value+" to:"+x.to.value+"\n"));
+        edges.forEach(
+                x -> System.out.print("weight:" + x.weight + " from:" + x.from.value + " to:" + x.to.value + "\n"));
         // 4.1 prim算法
         System.out.println("prim:");
         edges = s.primMST(graphOP.createExample2());
-        edges.forEach(x->System.out.print("weight:"+x.weight+" from:"+x.from.value+" to:"+x.to.value+"\n"));
+        edges.forEach(
+                x -> System.out.print("weight:" + x.weight + " from:" + x.from.value + " to:" + x.to.value + "\n"));
+        // 5.0 Dijkstra算法，单源最短路径算法
+        Map<Node, List<Node>> shortestPath= new HashMap<>();
+        graph = graphOP.createExample3();
+        Map<Node, Integer> shortestDist = s.dijkstra(graph, graph.nodes.get(0), shortestPath);
+        System.out.println("shortest path:");
+        for(Node n:shortestDist.keySet()){
+            List<Node> path = shortestPath.get(n);
+            path.forEach(x->System.out.print(x.value+" ==> "));
+            System.out.print(n.value+" || all weight:"+shortestDist.get(n)+"\n");
+        }
     }
 
     class Solution {
@@ -103,7 +115,7 @@ public class GraphOP {
         // 4.1 kruskal最小生成树算法
         public Set<Edge> kruskalMST(Graph graph) {
             List<Node> vals = new ArrayList<>();
-            for(Node n:graph.nodes.values()){
+            for (Node n : graph.nodes.values()) {
                 vals.add(n);
             }
             MySets sets = new MySets(vals);
@@ -111,7 +123,7 @@ public class GraphOP {
             // 排序edge并遍历
             Set<Edge> edges = graph.edges;
             PriorityQueue<Edge> sortedEdges = new PriorityQueue<>((x, y) -> x.weight - y.weight);
-            for(Edge e:edges){
+            for (Edge e : edges) {
                 sortedEdges.add(e);
             }
             while (!sortedEdges.isEmpty()) {
@@ -123,30 +135,80 @@ public class GraphOP {
             }
             return res;
         }
-    
+
         // 4.1 prim算法 思路：从一个点出发，将这个点的所有边加入优先级队列，弹出最小权重边，检查这个边的端点是否已经加入集合，加入了则换下一个最小边
-        public Set<Edge> primMST(Graph graph){
+        public Set<Edge> primMST(Graph graph) {
             // 优先级队列
-            PriorityQueue<Edge> queue = new PriorityQueue<>((o1,o2)->o1.weight-o2.weight);
+            PriorityQueue<Edge> queue = new PriorityQueue<>((o1, o2) -> o1.weight - o2.weight);
             // 结果集合
             Set<Edge> res = new HashSet<>();
             // 点是否已经存在于set中
             Set<Node> existSet = new HashSet<>();
-            // 从任意一个点出发，for循环是为了保证森林的情况出现 
-            for(Node startNode:graph.nodes.values()){
-                startNode.edges.forEach(x->queue.add(x));
+            // 从任意一个点出发，for循环是为了保证森林的情况出现
+            for (Node startNode : graph.nodes.values()) {
+                startNode.edges.forEach(x -> queue.add(x));
                 existSet.add(startNode);
                 // 循环
-                while(!queue.isEmpty()){
+                while (!queue.isEmpty()) {
                     Edge minEdge = queue.poll();
-                    if(existSet.contains(minEdge.to))continue;
+                    if (existSet.contains(minEdge.to))
+                        continue;
                     existSet.add(minEdge.to);
                     res.add(minEdge);
-                    minEdge.to.edges.forEach(x->queue.add(x)); // 端点的边加入候选边
+                    minEdge.to.edges.forEach(x -> queue.add(x)); // 端点的边加入候选边
                 }
-                // break;  如果图是联通的，就直接break了，不用考虑森林情况
+                // break; 如果图是联通的，就直接break了，不用考虑森林情况
             }
             return res;
+        }
+
+        // 5.0 Dijkstra算法，单源最短路径算法
+        public Map<Node, Integer> dijkstra(Graph graph, Node node,Map<Node, List<Node>> shortestPathMap) {
+            // node 到其他所有节点的最短路径
+            // 使用两个hashmap分别维护最短路径和路径权重和
+            Map<Node, Integer> distMap = new HashMap<>();
+            // Map<Node, List<Node>> shortestPathMap = new HashMap<>(); // 为了多一个返回值
+            // 候选点
+            Set<Node> set = new HashSet<>();
+            // 初始化路径值 -1 表示无穷大
+            for (Node n : graph.nodes.values()) {
+                if (n == node)
+                    continue;
+                distMap.put(n, -1);
+                set.add(n);
+                List<Node> path = new ArrayList<>();
+                path.add(node);
+                shortestPathMap.put(n, path);
+            }
+            for (Edge e : node.edges) {
+                distMap.put(e.to, e.weight);
+            }
+            // 遍历候选点，找出最小路径
+            while (!set.isEmpty()) {
+                Node minNode = null;
+                int minPathValue = -1;
+                for (Node n : set) {
+                    if (distMap.get(n) < minPathValue || minPathValue == -1) {
+                        minPathValue = distMap.get(n);
+                        minNode = n;
+                    }
+                }
+                // 对最小值点操作
+                set.remove(minNode);
+                for (Edge e : minNode.edges) { // 本节点能到达的所有其他候选点
+                    if (!set.contains(e.to))
+                        continue; // 已经确定好的点没必要走
+                    int currDist = minPathValue + e.weight;
+                    if (distMap.get(e.to) > currDist||distMap.get(e.to)==-1) { // -1表示正无穷
+                        distMap.put(e.to, currDist);
+                        shortestPathMap.get(e.to).clear();
+                        shortestPathMap.get(e.to).addAll(shortestPathMap.get(minNode));
+                        shortestPathMap.get(e.to).add(minNode); // 经过minNode以后路径更短，所以路径改为minNode的路径
+                    }
+                }
+            }
+            return distMap;
+
         }
     }
 
@@ -165,7 +227,7 @@ public class GraphOP {
         int[][] matrix = new int[12][3];
         matrix[0] = new int[] { 0, 1, 1 };
         matrix[1] = new int[] { 0, 2, 2 };
-        matrix[2] = new int[] { 0, 3, 2 }; 
+        matrix[2] = new int[] { 0, 3, 2 };
         matrix[3] = new int[] { 1, 4, 1 };
         matrix[4] = new int[] { 1, 2, 3 };
         matrix[5] = new int[] { 2, 3, 1 };
@@ -176,6 +238,28 @@ public class GraphOP {
         matrix[9] = new int[] { 4, 1, 1 };
         matrix[10] = new int[] { 2, 1, 3 };
         matrix[11] = new int[] { 3, 2, 1 };
+        return createGraph(matrix);
+    }
+    public Graph createExample3() {
+        int[][] matrix = new int[16][3];
+        matrix[0] = new int[] { 0, 1, 3 };
+        matrix[1] = new int[] { 1, 0, 3 };
+        matrix[2] = new int[] { 0, 2, 15 };
+        matrix[3] = new int[] { 2, 0, 15 };
+        matrix[4] = new int[] { 0, 3, 9 };
+        matrix[5] = new int[] { 3, 0, 9 };
+
+        matrix[6] = new int[] { 1, 2, 2 };
+        matrix[7] = new int[] { 2, 1, 2 };
+        matrix[8] = new int[] { 2, 3, 7 };
+        matrix[9] = new int[] { 3, 2, 7 };
+
+        matrix[10] = new int[] { 3, 4, 16 };
+        matrix[11] = new int[] { 4, 3, 16 };
+        matrix[12] = new int[] { 4, 2, 14 };
+        matrix[13] = new int[] { 2, 4, 14 };
+        matrix[14] = new int[] { 4, 1, 200 };
+        matrix[15] = new int[] { 1, 4, 200 };
         return createGraph(matrix);
     }
 
