@@ -1,22 +1,140 @@
 package com.new_leet_code.prefix_tree_and_greedy;
-
-import java.util.Arrays;
+import java.util.*;
 
 public class PrefixTree {
     public static void main(String[] args) {
         PrefixTree prefixTree = new PrefixTree();
         Solution s = prefixTree.new Solution();
+
+        // 1-4. 测试前缀树功能
         Trie trie = prefixTree.new Trie();
         trie.insert("abc");
         trie.insert("abc");
         trie.insert("abd");
         System.out.println(trie.search("abc"));
         System.out.println(trie.prefixNumber("ab"));
+        trie.delete("abd");
+        System.out.println(trie.prefixNumber("ab"));
 
+        // 贪心算法：技巧就是根据某个标准建立比较器，建立堆
+        // 5. 会议安排问题
+        System.out.println("greedy");
+        Meeting[] meetings = new Meeting[]{prefixTree.new Meeting(6, 7),prefixTree.new Meeting(6, 8),prefixTree.new Meeting(7, 10),
+            prefixTree.new Meeting(6, 9),prefixTree.new Meeting(9, 10)};
+        List<Meeting> res = s.arrangeMeeting(meetings);
+        res.forEach(x->System.out.println(x.startTime+" || "+x.endTime));
+
+        //6. 字典序结合问题，现在给一些字符串数组["b","ba",....] 要求将这些字符串拼接成一个串，使得最后的结果字典序最小，比如 bba字典序明显大于 bab，所以结果是bab
+        System.out.println(s.combine(new String[]{"b","ba"}));
+
+        // 7. 分割金条问题，长度60的金条分割成两份需要花费60，现在有数组[10,20,30]代表金条总长度60，需要划分成这样的三份，怎么划分代价最低：如60划分成10，50，然后50分成20，30，总代价是110
+        // 如果这样划分：60分成30,30 然后30划分成10,20 代价是90
+        // 思路：1. 将数组的所有字符串排序，arrays.sort，然后顺序拼接   这种贪心策略是错误的！！！
+        // 思路：2. 将排序数组的时候，自定义比较器，比如排序 b和ba时，比较bba和bab的字典序，谁小排前面
+        System.out.println(s.splitGold2(new Integer[]{10,20,30}));
+
+        // 查看两种解决方案的差异  实际结果表明还是思路2是对的
+        System.out.println("diff: "+s.splitGoldDiff(10));
     }
 
     class Solution {
 
+        // 贪心算法
+
+        // 5. 一个项目占用一个会议室，给你一个项目开始和结束时间，得到怎么样的安排使得会议室利用次数最多
+        // 思路：哪一个会议结束时间早，先安排他就能得到最优解，执行：先找出结束时间最早的，删除和他冲突的，然后继续
+        public List<Meeting> arrangeMeeting(Meeting[] meetings){
+            PriorityQueue<Meeting> priorityQueue = new PriorityQueue<>((o1,o2)->o1.endTime-o2.endTime);
+            for(Meeting meeting:meetings){
+                priorityQueue.add(meeting);
+            }
+            int endTime =-1;
+            List<Meeting> result = new ArrayList<>();
+            while (!priorityQueue.isEmpty()) {
+                Meeting meeting = priorityQueue.poll();
+                // 判断是否和已有时间冲突
+                if(meeting.startTime>=endTime) {
+                    result.add(meeting);
+                    endTime = meeting.endTime;
+                }
+            }
+            return result;
+        }
+        //6. 字典序结合问题，现在给一些字符串数组["b","ba",....] 要求将这些字符串拼接成一个串，使得最后的结果字典序最小，比如 bba字典序明显大于 bab，所以结果是bab
+        // 思路：1. 将数组的所有字符串排序，arrays.sort，然后顺序拼接   这种贪心策略是错误的！！！
+        // 思路：2. 将排序数组的时候，自定义比较器，比如排序 b和ba时，比较bba和bab的字典序，谁小排前面
+        public String combine(String[] strs){
+            Arrays.sort(strs,(o1,o2)->(o1+o2).compareTo(o2+o1));
+            StringBuilder builder = new StringBuilder();
+            for(String s:strs){
+                builder.append(s);
+            }
+            return builder.toString();
+        }
+        // 7. 分割金条问题，长度60的金条分割成两份需要花费60，现在有数组[10,20,30]代表金条总长度60，需要划分成这样的三份，怎么划分代价最低：如60划分成10，50，然后50分成20，30，总代价是110
+        // 如果这样划分：60分成30,30 然后30划分成10,20 代价是90
+        // 思路：从最大的开始划分 不一定对！  另一个思路：所有数据入堆，每次选择最小的两个数相加入堆 （本质就是哈夫曼树）
+        // 两种思路不知道谁对，写一个对数器来比较
+        public int splitGold(Integer[] arr){
+            int res = 0;
+            int total = 0;
+            for(int n:arr){
+                total += n;
+            }
+            Arrays.sort(arr,(o1,o2)->o2-o1);
+            for(int i=0;i<arr.length-1;i++){
+                total -= arr[i];
+                res +=total+arr[i];
+            }
+            return res;
+        }
+        public int splitGold2(Integer[] arr){
+            PriorityQueue<Integer> priorityQueue = new PriorityQueue<>();
+            for(Integer n:arr){
+                priorityQueue.add(n);
+            }
+            int res = 0;
+            while(!priorityQueue.isEmpty()){
+                int sum = 0;
+                sum += priorityQueue.poll();
+                if(priorityQueue.isEmpty())break;
+                sum += priorityQueue.poll();
+                res += sum;
+                priorityQueue.add(sum);
+            }
+            return res;
+        }
+
+        // 随机生成长度1-101的数组
+        public Integer[] generatoIntegers(){
+            int n = (int)(Math.random()*100+1);
+            Integer[] arr = new Integer[n];
+            for(int i=0;i<arr.length;i++){
+                arr[i] = (int)(Math.random()*100+1);
+            }
+            return arr;
+        }
+
+        // 两种算法计算结果差异次数
+        public int splitGoldDiff(int times){
+            int diff=0;
+            for(int i=0;i<times;i++){
+                Integer[] arr = generatoIntegers();
+                if(splitGold(arr)!=splitGold2(arr))diff++;
+            }
+            return diff;
+        }
+
+    }
+
+    // 会议
+    class Meeting{
+        public int startTime;
+        public int endTime;
+        public Meeting(int start,int end){
+            this.startTime = start;
+            this.endTime = end; 
+        }
     }
 
     // 前缀树的节点定义 可以用于词频统计等功能
