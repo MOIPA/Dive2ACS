@@ -35,6 +35,10 @@ public class PrefixTree {
 
         // 查看两种解决方案的差异  实际结果表明还是思路2是对的
         System.out.println("diff: "+s.splitGoldDiff(10));
+
+
+        // 8. 暴力递归 n皇后问题
+        System.out.println(s.nQuenProblem(4));
     }
 
     class Solution {
@@ -123,6 +127,32 @@ public class PrefixTree {
                 if(splitGold(arr)!=splitGold2(arr))diff++;
             }
             return diff;
+        }
+
+        // 8. 暴力递归 n皇后问题  输入n表示n个皇后，每个皇后不共行不共列，不共斜线
+        public int nQuenProblem(int n){
+            int[] record = new int[n]; // record[0] 表示第0行的皇后的列
+            return doNQuen(record, 0,n);
+        }
+        // 当前第i行位置的皇后能放多少种
+        private int doNQuen(int[] record,int i,int n){
+            if(i==n)return 1; // 所有皇后放满了，存在一种摆放方式
+            int res = 0;
+            // record[i] 怎么放 遍历所有列
+            for(int j=0;j<n;j++){
+                if(isValid(record,i,j)){ // 如果放在i，j位置合法 
+                    record[i] = j;
+                    res += doNQuen(record, i+1, n); // 看下一个皇后有多少种放法
+                }
+            }
+            return res;
+        }
+        private boolean isValid(int[] record,int i,int j){
+            // 放在 i，j位置的皇后是否和前面的共列或者共斜线，一行放一个皇后所以不共行
+            for(int k=0;k<i;k++){  // 前一个皇后的坐标是 (k,record[k]) 当前的坐标是(i,j) 判断是否共斜线看斜率绝对值是否是1
+                if(j==record[k]||(Math.abs(k-i) == Math.abs(record[k]-j)))return false;
+            }
+            return true;
         }
 
     }
